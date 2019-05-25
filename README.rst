@@ -84,3 +84,6 @@ Then you can do things like get a snapshot from the camera directly::
 
  $ uvc --name Porch --get-snapshot > foo.jpg
 
+Lastly you can use the apikey as a command line argument to access all commands::
+
+ python3 uvc --host 192.168.1.35 --port 7080 --apikey XXXXXXX --get-snapshot --name "Porch Eve" > porch.jpg
