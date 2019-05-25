@@ -53,27 +53,6 @@ def do_snapshot(client, camera_info):
         return client.get_snapshot(camera_info['uuid'])
 
 
-def do_reboot(client, camera_info):
-    password = INFO_STORE.get_camera_password(camera_info['uuid']) or 'ubnt'
-    if client.server_version >= (3, 2, 0):
-        cam_client = camera.UVCCameraClientV320(camera_info['host'],
-                                                camera_info['username'],
-                                                password)
-    else:
-        cam_client = camera.UVCCameraClient(camera_info['host'],
-                                            camera_info['username'],
-                                            password)
-    try:
-        cam_client.login()
-        return cam_client.reboot()
-    except camera.CameraAuthError:
-        print('Failed to login to camera')
-    except camera.CameraConnectError:
-        print('Failed to connect to camera')
-    except Exception as e:
-        print('Failed to reboot: %s' % e)
-
-
 def do_set_password(opts):
     print('This will store the administrator password for a camera ')
     print('for later use. It will be stored on disk obscured, but ')
@@ -103,8 +82,20 @@ def main():
     parser.add_option('-u', '--uuid', default=None, help='Camera UUID')
     parser.add_option('--name', default=None, help='Camera name')
     parser.add_option('-l', '--list', action='store_true', default=False)
+    parser.add_option('--irsensitivity', default=None,
+                      help='IR Camera Sensitivity (low,medium,high)')
+    parser.add_option('--irledmode', default=None,
+                      help='IR Led mode (none,full,motion)')
+    parser.add_option('--externalirmode', default=None,
+                      help='Recording mode off, on)')
     parser.add_option('--recordmode', default=None,
                       help='Recording mode (none,full,motion)')
+    parser.add_option('--get-externalirmode', default=None, action='store_true',
+                      help='Show if an external IR emitter is on')
+    parser.add_option('--get-irledmode', default=None, action='store_true',
+                      help='Show IR detection mode')
+    parser.add_option('--get-irsensitivity', default=None, action='store_true',
+                      help='Show IR Camera sensitivity level')
     parser.add_option('--get-recordmode', default=None, action='store_true',
                       help='Show recording mode')
     parser.add_option('--recordchannel', default=None,
@@ -120,17 +111,20 @@ def main():
                       help='Enable/Disable front LED (on,off)')
     parser.add_option('--get-snapshot', default=None, action='store_true',
                       help='Get a snapshot image and write to stdout')
-    parser.add_option('--reboot', default=None, action='store_true',
-                      help='Reboot camera')
     parser.add_option('--prune-zones', default=None, action='store_true',
                       help='Prune all but the first motion zone')
     parser.add_option('--list-zones', default=None, action='store_true',
                       help='List motion zones')
     parser.add_option('--set-password', default=None, action='store_true',
                       help='Store camera password')
+    parser.add_option('--test-login', default=None, action='store_true',
+                      help='Test if the given username/password can login to the NVR')
+    parser.add_option('--username', default=None, help='Username to attempt the login with')
+    parser.add_option('--password', default=None, help='Password to attempt the login with')
+
     opts, args = parser.parse_args()
 
-    if not all([host, port, apikey]):
+    if not all([opts.host, opts.port, opts.apikey]):
         print('Host, port, and apikey are required')
         return
 
@@ -154,6 +148,7 @@ def main():
         for cam in client.index():
             ident = cam[client.camera_identifier]
             recmode = client.get_recordmode(ident)
+            ip = client.get_cameraipaddress(ident)
             if not cam['managed']:
                 status = 'new'
             elif cam['state'] == 'FIRMWARE_OUTDATED':
@@ -166,7 +161,7 @@ def main():
                 status = 'online'
             else:
                 status = 'unknown:%s' % cam['state']
-            print('%s: %-24.24s [%10s] %s' % (cam['uuid'], cam['name'], status,
+            print('%s: %-24.24s %s [%10s] %s' % (cam['uuid'], cam['name'], ip, status,
                                               recmode))
     elif opts.recordmode:
         if not opts.uuid:
@@ -179,6 +174,36 @@ def main():
             return 0
         else:
             return 1
+    elif opts.externalirmode:
+        if not opts.uuid:
+            print('Name or UUID is required')
+            return 1
+
+        r = client.set_externalirmode(opts.uuid, opts.externalirmode)
+        if r is True:
+            return 0
+        else:
+            return 1
+    elif opts.irsensitivity:
+        if not opts.uuid:
+            print('Name or UUID is required')
+            return 1
+
+        r = client.set_irsensitivity(opts.uuid, opts.irsensitivity)
+        if r is True:
+            return 0
+        else:
+            return 1
+    elif opts.irledmode:
+        if not opts.uuid:
+            print('Name or UUID is required')
+            return 1
+
+        r = client.set_irledmode(opts.uuid, opts.irledmode)
+        if r is True:
+            return 0
+        else:
+            return 1
     elif opts.get_recordmode:
         if not opts.uuid:
             print('Name or UUID is required')
@@ -186,6 +211,31 @@ def main():
         r = client.get_recordmode(opts.uuid)
         print(r)
         return r == 'none'
+
+    elif opts.get_externalirmode:
+        if not opts.uuid:
+            print('Name or UUID is required')
+            return 1
+        r = client.get_externalirmode(opts.uuid)
+        print(r)
+        return r == 'none'
+
+    elif opts.get_irsensitivity:
+        if not opts.uuid:
+            print('Name or UUID is required')
+            return 1
+        r = client.get_irsensitivity(opts.uuid)
+        print(r)
+        return r == 'none'
+
+    elif opts.get_irledmode:
+        if not opts.uuid:
+            print('Name or UUID is required')
+            return 1
+        r = client.get_irledmode(opts.uuid)
+        print(r)
+        return r == 'none'
+
     elif opts.get_picture_settings:
         settings = client.get_picture_settings(opts.uuid)
         print(','.join(['%s=%s' % (k, v) for k, v in settings.items()]))
@@ -238,13 +288,13 @@ def main():
             sys.stdout.buffer.write(do_snapshot(client, camera))
         else:
             sys.stdout.write(do_snapshot(client, camera))
-    elif opts.reboot:
-        camera = client.get_camera(opts.uuid)
-        if not camera:
-            print('No such camera')
-            return 1
-        do_reboot(client, camera)
     elif opts.set_password:
         do_set_password(opts)
-    else:
-        print('No action specified; try --help')
+    elif opts.test_login:
+        resp = client.test_login(opts.username, opts.password)
+        if resp.status == 200:
+            print("login successful")
+            return 0
+        else:
+            print("login failed status=" + str(resp.status) + " error=" + resp.reason)
+            return 1
