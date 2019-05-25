@@ -161,8 +161,8 @@ def main():
                 status = 'online'
             else:
                 status = 'unknown:%s' % cam['state']
-            print('%s: %-24.24s %s [%10s] %s' % (cam['uuid'], cam['name'], ip, status,
-                                              recmode))
+            print('%s: %-24.24s %s [%10s] %s' % (cam['id'], cam['name'], ip, status, recmode))
+
     elif opts.recordmode:
         if not opts.uuid:
             print('Name or UUID is required')
@@ -285,7 +285,8 @@ def main():
             print('No such camera')
             return 1
         if hasattr(sys.stdout, 'buffer'):
-            sys.stdout.buffer.write(do_snapshot(client, camera))
+            # sys.stdout.buffer.write(do_snapshot(client, camera))
+            sys.stdout.buffer.write(client.get_snapshot(opts.uuid))
         else:
             sys.stdout.write(do_snapshot(client, camera))
     elif opts.set_password:

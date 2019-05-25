@@ -8,33 +8,48 @@ This is extremely raw at the moment. Use at your own risk.
 
 Hopefully this is enough to get you going::
 
-  Usage: uvc [options]
+ Usage: uvc [options]
 
-  Options:
-    -h, --help            show this help message and exit
-    -H HOST, --host=HOST  UVC Hostname
-    -P PORT, --port=PORT  UVC Port
-    -K APIKEY, --apikey=APIKEY
-                          UVC API Key
-    -v, --verbose
-    -d, --dump
-    -u UUID, --uuid=UUID  Camera UUID
-    --name=NAME           Camera name
-    -l, --list
-    --recordmode=RECORDMODE
-                          Recording mode (none,full,motion)
-    --recordchannel=RECORDCHANNEL
-                          Recording channel (high,medium,low)
-    -p, --get-picture-settings
-                          Return picture settings as a string
-    --set-picture-settings=SET_PICTURE_SETTINGS
-                          Set picture settings with a string like that returned
-                          from --get-picture-settings
-    --set-led=ENABLED     Enable/Disable front LED (on,off)
-    --get-snapshot        Get a snapshot image and write to stdout
-    --prune-zones         Prune all but the first motion zone
-    --list-zones          List motion zones
-    --set-password        Store camera password
+ Options:
+  -h, --help            show this help message and exit
+  -H HOST, --host=HOST  UVC Hostname
+  -P PORT, --port=PORT  UVC Port
+  -K APIKEY, --apikey=APIKEY
+                        UVC API Key
+  -v, --verbose
+  -d, --dump
+  -u UUID, --uuid=UUID  Camera UUID
+  --name=NAME           Camera name
+  -l, --list
+  --irsensitivity=IRSENSITIVITY
+                        IR Camera Sensitivity (low,medium,high)
+  --irledmode=IRLEDMODE
+                        IR Led mode (none,full,motion)
+  --externalirmode=EXTERNALIRMODE
+                        Recording mode off, on)
+  --recordmode=RECORDMODE
+                        Recording mode (none,full,motion)
+  --get-externalirmode  Show if an external IR emitter is on
+  --get-irledmode       Show IR detection mode
+  --get-irsensitivity   Show IR Camera sensitivity level
+  --get-recordmode      Show recording mode
+  --recordchannel=RECORDCHANNEL
+                        Recording channel (high,medium,low)
+  -p, --get-picture-settings
+                        Return picture settings as a string
+  --set-picture-settings=SET_PICTURE_SETTINGS
+                        Set picture settings with a string like that returned
+                        from --get-picture-settings
+  --set-led=ENABLED     Enable/Disable front LED (on,off)
+  --get-snapshot        Get a snapshot image and write to stdout
+  --prune-zones         Prune all but the first motion zone
+  --list-zones          List motion zones
+  --set-password        Store camera password
+  --test-login          Test if the given username/password can login to the
+                        NVR
+  --username=USERNAME   Username to attempt the login with
+  --password=PASSWORD   Password to attempt the login with
+
 
 For example::
 
@@ -68,3 +83,4 @@ must store the password. To do this::
 Then you can do things like get a snapshot from the camera directly::
 
  $ uvc --name Porch --get-snapshot > foo.jpg
+

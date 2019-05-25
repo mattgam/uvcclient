@@ -1009,6 +1009,21 @@ class UVCRemote(object):
         updated = data['data'][0]['enableSuggestedVideoSettings']
         return data == updated
 
+    def set_enablesuggestedvideosettings(self, uuid, state):
+        url = '/api/2.0/camera/%s' % uuid
+        data = self._uvc_request(url)
+        state = state.lower()
+        if state == 'true':
+            data['data'][0]['enableSuggestedVideoSettings'] = True
+        elif state == 'false':
+            data['data'][0]['enableSuggestedVideoSettings'] = False
+        else:
+            raise Invalid('Unknown mode')
+
+        data = self._uvc_request(url, 'PUT', json.dumps(data['data'][0]))
+        updated = data['data'][0]['enableSuggestedVideoSettings']
+        return data == updated
+
     def name_to_uuid(self, name):
         """Attempt to convert a camera name to its UUID.
 
