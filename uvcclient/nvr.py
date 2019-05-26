@@ -979,53 +979,6 @@ class UVCRemote(object):
         data = self._uvc_request(url)
         return data['data']
 
-
-    """
-        def get_all_alerts(self)
-        def delete_all_alerts(self, type=None)
-        def def delete_alert(self, data)
-        
-       def get_all_alerts(self):
-        url = '/api/2.0/alert/'
-        data = self._uvc_request(url)
-        return data['data']
-        {
-            "alertState": "new",
-            "alertLevel": "info",
-            "timestamp": 1558831321901,
-            "alertType": "loginInfo",
-            "archived": false,
-            "admin": null,
-            "meta": {
-                "fromUbntCloud": false,
-                "loggedIn": true,
-                "ipAddress": "192.168.1.35",
-                "userName": "mattgam"
-            },
-            "_id": "5ce9e0d92fb7107720f01a4b"
-        }
-    
-        to delete:
-        PUT
-        Request URL: https://192.168.1.35:7443/api/2.0/alert/5ce9e0d92fb7107720f01a4b
-        {
-            "alertType": "loginInfo",
-            "alertLevel": "info",
-            "alertState": "deleted",
-            "timestamp": 1558831321901,
-            "meta": {
-                "fromUbntCloud": false,
-                "loggedIn": true,
-                "ipAddress": "192.168.1.35",
-                "userName": "mattgam"
-            },
-            "cameraId": {},
-            "_id": "5ce9e0d92fb7107720f01a4b"
-        }
-    
-    """
-
-
     def name_to_uuid(self, name):
         """Attempt to convert a camera name to its UUID.
 
