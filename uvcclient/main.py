@@ -18,6 +18,7 @@ import getpass
 import logging
 import optparse
 import sys
+import pprint
 
 from uvcclient import nvr
 from uvcclient import camera
@@ -121,6 +122,14 @@ def main():
                       help='Test if the given username/password can login to the NVR')
     parser.add_option('--username', default=None, help='Username to attempt the login with')
     parser.add_option('--password', default=None, help='Password to attempt the login with')
+    parser.add_option('--get-allalerts', default=None, action='store_true',
+                      help='Dump the alerts in the alert table')
+    parser.add_option('--delete-allalerts', default=None, action='store_true',
+                      help='Deletes all the alerts in the alert table')
+    parser.add_option('--delete-alert', action='store_true',
+                      help='Delete the alert identified by the timestamp or alert-type arguments')
+    parser.add_option('--timestamp', type=int, help='integer timestamp to identify an alert')
+    parser.add_option('--alert-type', default=None, help='type of alert to delete')
 
     opts, args = parser.parse_args()
 
@@ -291,6 +300,43 @@ def main():
             sys.stdout.write(do_snapshot(client, camera))
     elif opts.set_password:
         do_set_password(opts)
+    elif opts.get_allalerts:
+        data = client.get_all_alerts()
+        for alert in data:
+            pprint.pprint(alert)
+    elif opts.delete_alert:
+        data = client.get_all_alerts()
+        for alert in data:
+            if opts.timestamp is not None:
+                if alert['timestamp'] == opts.timestamp:
+                    alert['alertState'] = 'deleted'
+                    if client.delete_alert(alert)['timestamp'] == opts.timestamp:
+                        print("Alert Deleted")
+                    else:
+                        print("Failed to delete alert")
+            if opts.alert_type is not None:
+                if opts.alert_type == str(alert['alertType']):
+                    alert['alertState'] = 'deleted'
+                    resp = client.delete_alert(alert)
+                    if resp['data'][0]['alertType'] == opts.alert_type:
+                        print("Alert " + resp['data'][0]['_id'] + " Deleted")
+                    else:
+                        print("Failed to delete alert")
+    elif opts.delete_allalerts is not None:
+        data = client.get_all_alerts()
+        for alert in data:
+            alert['alertState'] = 'deleted'
+            resp = client.delete_alert(alert)
+            if resp['data'][0]['_id'] == alert['_id']:
+                print("Alert " + resp['data'][0]['_id'] + " Deleted")
+            else:
+                print("Failed to delete alert")
+
+        data = client.get_all_alerts()
+        if len(data) <= 1:
+            print("All alerts deleted")
+        else:
+            print(str(len(data)) + " alerts remaining following deletion")
     elif opts.test_login:
         resp = client.test_login(opts.username, opts.password)
         if resp.status == 200:

@@ -969,60 +969,62 @@ class UVCRemote(object):
         updated = data['data'][0]['recordingSettings']
         return settings == updated
 
-    def get_enablestatusled(self, uuid):
-        url = '/api/2.0/camera/%s' % uuid
+    def delete_alert(self, alert):
+        url = '/api/2.0/alert/%s' % alert['_id']
+        data = self._uvc_request(url, 'PUT', json.dumps(alert))
+        return data
+
+    def get_all_alerts(self):
+        url = '/api/2.0/alert'
         data = self._uvc_request(url)
-        return data['data'][0]['enableStatusLed']
+        return data['data']
 
-    def set_enablestatusled(self, uuid, state):
-        url = '/api/2.0/camera/%s' % uuid
+
+    """
+        def get_all_alerts(self)
+        def delete_all_alerts(self, type=None)
+        def def delete_alert(self, data)
+        
+       def get_all_alerts(self):
+        url = '/api/2.0/alert/'
         data = self._uvc_request(url)
-        state = state.lower()
-        if state == 'true':
-            data['data'][0]['enableStatusLed'] = True
-        elif state == 'false':
-            data['data'][0]['enableStatusLed'] = False
-        else:
-            raise Invalid('Unknown mode')
+        return data['data']
+        {
+            "alertState": "new",
+            "alertLevel": "info",
+            "timestamp": 1558831321901,
+            "alertType": "loginInfo",
+            "archived": false,
+            "admin": null,
+            "meta": {
+                "fromUbntCloud": false,
+                "loggedIn": true,
+                "ipAddress": "192.168.1.35",
+                "userName": "mattgam"
+            },
+            "_id": "5ce9e0d92fb7107720f01a4b"
+        }
+    
+        to delete:
+        PUT
+        Request URL: https://192.168.1.35:7443/api/2.0/alert/5ce9e0d92fb7107720f01a4b
+        {
+            "alertType": "loginInfo",
+            "alertLevel": "info",
+            "alertState": "deleted",
+            "timestamp": 1558831321901,
+            "meta": {
+                "fromUbntCloud": false,
+                "loggedIn": true,
+                "ipAddress": "192.168.1.35",
+                "userName": "mattgam"
+            },
+            "cameraId": {},
+            "_id": "5ce9e0d92fb7107720f01a4b"
+        }
+    
+    """
 
-        data = self._uvc_request(url, 'PUT', json.dumps(data['data'][0]))
-        updated = data['data'][0]['enableStatusLed']
-        return data == updated
-
-    def get_enablesuggestedvideosettings(self, uuid):
-        url = '/api/2.0/camera/%s' % uuid
-        data = self._uvc_request(url)
-        return data['data'][0]['enableSuggestedVideoSettings']
-
-    def set_enablesuggestedvideosettings(self, uuid, state):
-        url = '/api/2.0/camera/%s' % uuid
-        data = self._uvc_request(url)
-        state = state.lower()
-        if state == 'true':
-            data['data'][0]['enableSuggestedVideoSettings'] = True
-        elif state == 'false':
-            data['data'][0]['enableSuggestedVideoSettings'] = False
-        else:
-            raise Invalid('Unknown mode')
-
-        data = self._uvc_request(url, 'PUT', json.dumps(data['data'][0]))
-        updated = data['data'][0]['enableSuggestedVideoSettings']
-        return data == updated
-
-    def set_enablesuggestedvideosettings(self, uuid, state):
-        url = '/api/2.0/camera/%s' % uuid
-        data = self._uvc_request(url)
-        state = state.lower()
-        if state == 'true':
-            data['data'][0]['enableSuggestedVideoSettings'] = True
-        elif state == 'false':
-            data['data'][0]['enableSuggestedVideoSettings'] = False
-        else:
-            raise Invalid('Unknown mode')
-
-        data = self._uvc_request(url, 'PUT', json.dumps(data['data'][0]))
-        updated = data['data'][0]['enableSuggestedVideoSettings']
-        return data == updated
 
     def name_to_uuid(self, name):
         """Attempt to convert a camera name to its UUID.
